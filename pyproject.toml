@@ -1,0 +1,23 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "draw64"
+version = "0.0.1"
+authors = [
+    { name = "Guillaume Pratte", email = "guillaume@guillaumepratte.net" },
+]
+description = "A small 64 pixels drawing application"
+readme = "README.md"
+requires-python = ">=3.8"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+dependencies = ["fastapi", "nanoid", "websockets"]
+
+[project.urls]
+Homepage = "https://github.com/guillaumep/draw64"
+Issues = "https://github.com/guillaumep/draw64/issues"
