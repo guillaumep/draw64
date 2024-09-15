@@ -19,6 +19,10 @@ class PubSub:
         for queue in self._queues[topic]:
             queue.put_nowait(message)
 
+    def broadcast_all(self, message: Any):
+        for topic in self._queues:
+            self.broadcast(topic, message)
+
 
 class SubscribedQueue(Queue):
     def __init__(self, pubsub: PubSub, topic: str):

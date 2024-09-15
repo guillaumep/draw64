@@ -14,12 +14,12 @@ ImageValues = list[list[int]]
 
 
 class DrawCommand(BaseModel):
-    command_type: Literal["draw"]
+    command_type: Literal["draw"] = "draw"
     values: ImageValues
 
 
 class ClearCanvasCommand(BaseModel):
-    command_type: Literal["clear_canvas"]
+    command_type: Literal["clear_canvas"] = "clear_canvas"
 
 
 Command = Union[DrawCommand, ClearCanvasCommand]
