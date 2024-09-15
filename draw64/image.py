@@ -8,7 +8,12 @@ from numpydantic.dtype import UInt8
 from PIL import Image as PILImage
 from pydantic import BaseModel, Field
 
-from draw64.update_image_request import Command, DrawCommand, ClearCanvasCommand
+from draw64.update_image_request import (
+    ClearCanvasCommand,
+    Command,
+    DrawCommand,
+    ImageValues,
+)
 
 alphabet = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
 
@@ -20,7 +25,8 @@ def create_image_id():
 
 
 def create_image_data():
-    return np.zeros((64, 64, 3), np.uint8)
+    # Create a white image of dimension 64x64
+    return np.full((64, 64, 3), 255, np.uint8)
 
 
 class Image(BaseModel):
@@ -31,7 +37,11 @@ class Image(BaseModel):
         if isinstance(command, ClearCanvasCommand):
             self.clear()
         elif isinstance(command, DrawCommand):
-            pass
+            self.update_values(command.values)
+
+    def update_values(self, values_array: ImageValues):
+        for values in values_array:
+            self.data[values[0]][values[1]] = values[2:5]
 
     def clear(self):
         self.data.fill(255)
