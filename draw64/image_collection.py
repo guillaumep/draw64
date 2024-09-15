@@ -21,13 +21,15 @@ class ImageCollection:
     def __getitem__(self, image_id: str):
         return self._images[image_id]
 
-    def create_image(self, image_id: str | None = None):
+    def __delitem__(self, image_id: str):
+        del self._images[image_id]
+
+    def values(self):
+        return self._images.values()
+
+    def create_image(self, image_id: str | None = None) -> Image:
         if image_id and image_id in self:
             raise ImageIDAlreadyExistsException(image_id)
-        image = Image(image_id)
-        self._images[image.id] = image
-        return image.id
-
-    def delete_image(self, image_id: str):
-        if image_id in self._images:
-            del self._images[image_id]
+        image = Image(image_id=image_id) if image_id else Image()
+        self._images[image.image_id] = image
+        return image

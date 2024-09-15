@@ -1,21 +1,31 @@
-from nanoid import generate
+from io import BytesIO
 
-from draw64.models import Command, DrawCommand, ClearCanvasCommand
+import numpy as np
+
+from nanoid import generate
+from numpydantic import NDArray, Shape
+from numpydantic.dtype import UInt8
+from PIL import Image as PILImage
+from pydantic import BaseModel, Field
+
+from draw64.update_image_request import Command, DrawCommand, ClearCanvasCommand
 
 alphabet = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
 
+ImageData = NDArray[Shape["64, 64, 3"], UInt8]  # type: ignore
 
-class Image:
-    def __init__(self, image_id: str | None = None):
-        self._id = image_id or generate(alphabet=alphabet, size=22)
-        self.clear()
 
-    @property
-    def id(self):
-        return self._id
+def create_image_id():
+    return generate(alphabet=alphabet, size=22)
 
-    def _create_empty_image(self):
-        return [[0] * 64] * 64
+
+def create_image_data():
+    return np.zeros((64, 64, 3), np.uint8)
+
+
+class Image(BaseModel):
+    image_id: str = Field(default_factory=create_image_id)
+    data: ImageData = Field(default_factory=create_image_data, exclude=True)
 
     def update(self, command: Command):
         if isinstance(command, ClearCanvasCommand):
@@ -24,4 +34,9 @@ class Image:
             pass
 
     def clear(self):
-        self._data = self._create_empty_image()
+        self.data.fill(255)
+
+    def to_png(self) -> bytes:
+        bytesio = BytesIO()
+        PILImage.fromarray(self.data, "RGB").save(bytesio, format="PNG")
+        return bytesio.getvalue()

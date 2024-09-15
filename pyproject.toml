@@ -16,7 +16,14 @@ classifiers = [
     "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
 ]
-dependencies = ["fastapi", "nanoid", "websockets"]
+dependencies = [
+    "fastapi",
+    "nanoid",
+    "numpy",
+    "numpydantic",
+    "pillow",
+    "websockets",
+]
 
 [project.urls]
 Homepage = "https://github.com/guillaumep/draw64"
