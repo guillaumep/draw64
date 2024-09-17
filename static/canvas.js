@@ -4,20 +4,6 @@ const canvasSize = gridSize * squareSize;
 
 const dpr = 2;
 
-const strokeGrid = (ctx) => {
-  ctx.strokeStyle = "#b0b0b0";
-  ctx.strokeRect(0, 0, canvas.width / dpr, canvas.height / dpr);
-  ctx.beginPath();
-
-  for (let i = 0; i < gridSize; i++) {
-    ctx.moveTo(i * squareSize, 0);
-    ctx.lineTo(i * squareSize, canvas.height);
-    ctx.moveTo(0, i * squareSize);
-    ctx.lineTo(canvas.width, i * squareSize);
-    ctx.stroke();
-  }
-};
-
 const drawTiles = (ctx) => {
   for (let i = 0; i < gridSize; i++) {
     for (let j = 0; j < gridSize; j++) {
@@ -81,14 +67,15 @@ let lastMouseX = -1;
 let lastMouseY = -1;
 let isMouseDown = false;
 
-const getDrawCommand = (x, y, r, g, b) => ({
+const getDrawCommand = (values) => ({
   command: {
     command_type: "draw",
-    values: [[x, y, r, g, b]],
+    values,
   },
 });
 
 const getMousePosition = (event) => {
+  const canvas = document.getElementById("canvas");
   const rect = canvas.getBoundingClientRect();
   const x = Math.floor((event.clientX - rect.left) / squareSize);
   const y = Math.floor((event.clientY - rect.top) / squareSize);
@@ -96,21 +83,23 @@ const getMousePosition = (event) => {
   return [x, y];
 };
 
-const getSelectedColor = () =>
-  selectedColor
+const getRGBValuesFromRGBString = (color) =>
+  color
     .replace(/[^\d,]/g, "")
     .split(",")
     .map((v) => parseInt(v, 10));
 
 const sendDrawCommand = (x, y) => {
-  const [r, g, b] = getSelectedColor();
+  const [r, g, b] = getRGBValuesFromRGBString(selectedColor);
 
-  const drawCommand = getDrawCommand(x, y, r, g, b);
+  const drawCommand = getDrawCommand([[x, y, r, g, b]]);
 
   ws.send(JSON.stringify(drawCommand));
 };
 
 const onMouseDown = (event) => {
+  event.preventDefault();
+  event.stopPropagation();
   const [x, y] = getMousePosition(event);
   lastMouseX = x;
   lastMouseY = y;
@@ -120,6 +109,8 @@ const onMouseDown = (event) => {
 };
 
 const onMouseMove = (event) => {
+  event.preventDefault();
+  event.stopPropagation();
   if (!isMouseDown) {
     return;
   }
@@ -135,5 +126,7 @@ const onMouseMove = (event) => {
 };
 
 const onMouseUp = () => {
+  event.preventDefault();
+  event.stopPropagation();
   isMouseDown = false;
 };

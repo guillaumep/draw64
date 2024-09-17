@@ -8,6 +8,10 @@
         gap: 20px;
       }
 
+      #random {
+        height: 2em;
+      }
+
       #palette {
         display: flex;
         flex-direction: column;
@@ -47,6 +51,7 @@
       height="1280"
     ></canvas>
     <div id="palette"></div>
+    <button id="random">Send a heart!</button>
     <ul id="messages"></ul>
     <script>
       const baseURL = location.origin.replace("http:", "ws:");
@@ -54,16 +59,17 @@
 
       ws.onmessage = (event) => {
         const data = JSON.parse(event.data);
-        const [x, y, r, g, b] = data.event.command.values[0];
-        const canvas = document.getElementById("canvas");
-        const ctx = canvas.getContext("2d");
-        ctx.fillStyle = `rgb(${r}, ${g}, ${b})`;
-        ctx.fillRect(
-          x * squareSize * dpr,
-          y * squareSize * dpr,
-          squareSize * dpr,
-          squareSize * dpr
-        );
+        data.event.command.values.forEach(([x, y, r, g, b]) => {
+          const canvas = document.getElementById("canvas");
+          const ctx = canvas.getContext("2d");
+          ctx.fillStyle = `rgb(${r}, ${g}, ${b})`;
+          ctx.fillRect(
+            x * squareSize * dpr,
+            y * squareSize * dpr,
+            squareSize * dpr,
+            squareSize * dpr
+          );
+        });
       };
 
       const sendMessage = (event) => {
