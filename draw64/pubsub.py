@@ -19,10 +19,6 @@ class PubSub:
         for queue in self._queues[topic]:
             queue.put_nowait(message)
 
-    def broadcast_all(self, message: Any):
-        for topic in self._queues:
-            self.broadcast(topic, message)
-
 
 class SubscribedQueue(Queue):
     def __init__(self, pubsub: PubSub, topic: str):
@@ -32,3 +28,22 @@ class SubscribedQueue(Queue):
 
     def unsubscribe(self):
         self._pubsub.unsubscribe(self._topic, self)
+
+
+class SimplePubSub:
+    """A pubsub without topics."""
+
+    def __init__(self):
+        self._queues: set[Queue] = set()
+
+    def subscribe(self):
+        queue = Queue()
+        self._queues.add(queue)
+        return queue
+
+    def unsubscribe(self, queue: Queue):
+        self._queues.remove(queue)
+
+    def broadcast(self, message: Any):
+        for queue in self._queues:
+            queue.put_nowait(message)

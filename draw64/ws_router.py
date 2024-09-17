@@ -2,17 +2,13 @@ import asyncio
 import logging
 from typing import cast
 
-from fastapi import (
-    APIRouter,
-    WebSocket,
-    WebSocketDisconnect,
-)
+from fastapi import APIRouter, WebSocket
 
 from draw64.event import ImageEventMessage
 from draw64.event_factory import make_image_updated_message
 from draw64.image_id import ImageID
 from draw64.pubsub import SubscribedQueue
-from draw64.state import collection, conn_mananger, pubsub
+from draw64.state import collection, pubsub
 from draw64.update_image_request import UpdateImageRequest
 
 router = APIRouter()
@@ -52,17 +48,16 @@ async def handle_websocket(
 
 
 @router.websocket("/ws/images/{image_id}")
-async def websocket_endpoint(image_id: ImageID, websocket: WebSocket):
+async def websocket_image_endpoint(image_id: ImageID, websocket: WebSocket):
+    await websocket.accept()
+    message_queue = pubsub.subscribe(image_id)
+
     # FIXME: we might want to ask the caller to properly create its image
     # (and thus type image_id as ValidatedImageID)
     if image_id not in collection:
         collection.create_image(image_id)
 
-    message_queue = pubsub.subscribe(image_id)
-    await conn_mananger.connect(websocket)
     try:
         await handle_websocket(image_id, websocket, message_queue)
-
-    except WebSocketDisconnect:
+    except Exception:
         message_queue.unsubscribe()
-        conn_mananger.disconnect(websocket)

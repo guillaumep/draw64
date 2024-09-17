@@ -23,6 +23,7 @@ dependencies = [
     "numpydantic",
     "pillow",
     "websockets",
+    "sse-starlette",
 ]
 
 [project.urls]

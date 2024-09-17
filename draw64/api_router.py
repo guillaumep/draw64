@@ -11,7 +11,7 @@ from fastapi.responses import HTMLResponse
 from draw64.image import Image, ImageData
 from draw64.image_collection import ImageIDAlreadyExistsException
 from draw64.image_id import ImageID, ValidatedImageID
-from draw64.state import pubsub, collection
+from draw64.state import announcer, pubsub, collection
 from draw64.update_image_request import UpdateImageRequest
 from draw64.event_factory import (
     make_image_created_message,
@@ -36,7 +36,7 @@ async def get_images_list() -> list[Image]:
 @router.post("/images", status_code=status.HTTP_201_CREATED)
 async def create_image() -> Image:
     image = collection.create_image()
-    pubsub.broadcast_all(make_image_created_message(image))
+    announcer.broadcast(make_image_created_message(image))
     return image
 
 
@@ -51,7 +51,7 @@ async def create_image_with_id(image_id: ImageID) -> Image:
     """
     try:
         image = collection.create_image(image_id)
-        pubsub.broadcast_all(make_image_created_message(image))
+        announcer.broadcast(make_image_created_message(image))
         return image
     except ImageIDAlreadyExistsException:
         raise HTTPException(
@@ -94,5 +94,5 @@ async def update_image(image_id: ValidatedImageID, update_request: UpdateImageRe
     responses={status.HTTP_404_NOT_FOUND: {"description": "Image ID does not exist."}},
 )
 async def delete_image(image_id: ValidatedImageID):
-    pubsub.broadcast_all(make_image_deleted_message(collection[image_id]))
+    announcer.broadcast(make_image_deleted_message(collection[image_id]))
     del collection[image_id]

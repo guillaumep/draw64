@@ -1,8 +1,10 @@
-from draw64.connection_manager import WSConnectionManager
+from asyncio import Event
+
 from draw64.image_collection import ImageCollection
-from draw64.pubsub import PubSub
+from draw64.pubsub import PubSub, SimplePubSub
 
 
-conn_mananger = WSConnectionManager()
 collection = ImageCollection()
 pubsub = PubSub()
+announcer = SimplePubSub()
+stop_event = Event()
