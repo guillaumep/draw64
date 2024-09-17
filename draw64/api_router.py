@@ -22,7 +22,7 @@ from draw64.event_factory import (
 router = APIRouter()
 
 
-@router.get("/")
+@router.get("/", include_in_schema=False)
 async def get():
     # TODO: once development is done we could read the file only once
     return HTMLResponse(open(Path(__file__).parent.parent / "index.html", "r").read())
