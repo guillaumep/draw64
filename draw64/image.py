@@ -48,5 +48,7 @@ class Image(BaseModel):
 
     def to_png(self) -> bytes:
         bytesio = BytesIO()
-        PILImage.fromarray(self.data, "RGB").save(bytesio, format="PNG")
+        PILImage.fromarray(np.swapaxes(self.data, 0, 1), "RGB").save(
+            bytesio, format="PNG"
+        )
         return bytesio.getvalue()
