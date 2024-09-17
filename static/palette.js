@@ -34,6 +34,54 @@ const palette = [
 
 let selectedColor = palette[0];
 
+const getHeartData = (color, centerX, centerY) => {
+  const [r, g, b] = getRGBValuesFromRGBString(color);
+  return [
+    [centerX - 2, centerY - 3, r, g, b],
+    [centerX + 2, centerY - 3, r, g, b],
+
+    [centerX - 1, centerY - 2, r, g, b],
+    [centerX - 2, centerY - 2, r, g, b],
+    [centerX - 3, centerY - 2, r, g, b],
+    [centerX + 1, centerY - 2, r, g, b],
+    [centerX + 2, centerY - 2, r, g, b],
+    [centerX + 3, centerY - 2, r, g, b],
+
+    [centerX, centerY - 1, r, g, b],
+    [centerX - 1, centerY - 1, r, g, b],
+    [centerX - 2, centerY - 1, r, g, b],
+    [centerX - 3, centerY - 1, r, g, b],
+    [centerX + 1, centerY - 1, r, g, b],
+    [centerX + 2, centerY - 1, r, g, b],
+    [centerX + 3, centerY - 1, r, g, b],
+
+    [centerX, centerY, r, g, b],
+    [centerX - 1, centerY, r, g, b],
+    [centerX - 2, centerY, r, g, b],
+    [centerX + 1, centerY, r, g, b],
+    [centerX + 2, centerY, r, g, b],
+
+    [centerX, centerY + 1, r, g, b],
+    [centerX - 1, centerY + 1, r, g, b],
+    [centerX + 1, centerY + 1, r, g, b],
+
+    [centerX, centerY + 2, r, g, b],
+  ];
+};
+
+const onRandomClick = () => {
+  const randomX = Math.floor(Math.random() * gridSize + 1);
+  const randomY = Math.floor(Math.random() * gridSize + 1);
+  const randomColorIndex = Math.floor(Math.random() * palette.length);
+  const randomColor = palette[randomColorIndex];
+
+  const drawCommand = getDrawCommand(
+    getHeartData(randomColor, randomX, randomY)
+  );
+
+  ws.send(JSON.stringify(drawCommand));
+};
+
 const createPalette = () => {
   const paletteButtons = document.querySelector("#palette");
 
@@ -60,6 +108,9 @@ const createPalette = () => {
 
     paletteButtons.appendChild(paletteButton);
   });
+
+  const randomButton = document.getElementById("random");
+  randomButton.addEventListener("click", onRandomClick);
 };
 
 window.addEventListener("load", createPalette);
