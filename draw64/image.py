@@ -2,7 +2,6 @@ from io import BytesIO
 
 import numpy as np
 
-from nanoid import generate
 from numpydantic import NDArray, Shape
 from numpydantic.dtype import UInt8
 from PIL import Image as PILImage
@@ -17,13 +16,8 @@ from draw64.update_image_request import (
     ImageValues,
 )
 
-alphabet = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
 
 ImageData = NDArray[Shape["64, 64, 3"], UInt8]  # type: ignore
-
-
-def create_image_id():
-    return generate(alphabet=alphabet, size=22)
 
 
 def create_image_data():
@@ -32,7 +26,7 @@ def create_image_data():
 
 
 class Image(BaseModel):
-    image_id: str = Field(default_factory=create_image_id)
+    image_id: str
     data: ImageData = Field(default_factory=create_image_data, exclude=True)
 
     def update(self, command: Command):

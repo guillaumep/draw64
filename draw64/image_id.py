@@ -5,7 +5,7 @@ from fastapi import Depends, HTTPException, Path, status
 from draw64.image_collection import collection
 
 
-ImageID = Annotated[str, Path(max_length=30, pattern=r"^[a-zA-Z\d]+$")]
+ImageID = Annotated[str, Path(max_length=30, pattern=r"^[a-zA-Z\d-]+$")]
 
 
 async def validate_image_id(image_id: ImageID):
