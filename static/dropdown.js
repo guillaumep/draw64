@@ -7,8 +7,6 @@ const initDropdown = async () => {
     initWebSocket(imageId);
   };
 
-  const evtSource = new EventSource("/sse/announce");
-
   const addOption = ({ image_id }) => {
     const existingOption = document.getElementById(`image-${image_id}`);
     if (existingOption) {
@@ -22,6 +20,8 @@ const initDropdown = async () => {
 
     select.appendChild(option);
   };
+
+  const evtSource = new EventSource("/sse/announce");
 
   evtSource.addEventListener("image_created", (event) => {
     addOption(JSON.parse(event.data).event);

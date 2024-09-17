@@ -8,7 +8,6 @@ from sse_starlette.sse import EventSourceResponse, ServerSentEvent
 
 from draw64.event import ImageEventMessage
 from draw64.pubsub import announcer
-from draw64.state import stop_event
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
@@ -18,7 +17,7 @@ async def get_announces():
     message_id = 1
     message_queue = announcer.subscribe()
     try:
-        while not stop_event.is_set():
+        while True:
             message = cast(ImageEventMessage, await message_queue.get())
             yield ServerSentEvent(
                 data=message.model_dump_json(),
@@ -26,8 +25,9 @@ async def get_announces():
                 id=str(message_id),
             )
             message_id += 1
-    except asyncio.CancelledError:
+    except asyncio.CancelledError as e:
         logger.info("Client terminated SSE connection.")
+        raise e
     finally:
         announcer.unsubscribe(message_queue)
 
