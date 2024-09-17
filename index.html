@@ -1,79 +1,253 @@
 <!DOCTYPE html>
 <html>
-    <head>
-        <title>Draw64</title>
-    </head>
-    <body>
-        <canvas style="width: 640px; height: 640px;" id="canvas" width="1280" height="1280"></canvas>
-        <div style="width: 30px; height: 30px; background-color: red; border-radius: 15px;" onclick="setSelectedColor([225, 0, 0]);"></div>
-        <div style="width: 30px; height: 30px; background-color: rgb(0, 0, 255); border-radius: 15px;" onclick="setSelectedColor([0, 0, 255]);"></div>
-        <div style="width: 30px; height: 30px; background-color: rgb(0, 255, 0); border-radius: 15px;" onclick="setSelectedColor([0, 255, 0]);"></div>
-        <ul id='messages'>
-        </ul>
-        <script>
-            let selectedColor = 'rgb(86, 126, 193)';
-            const setSelectedColor = (color) => {
-                selectedColor = `rgb(${color[0]}, ${color[1]}, ${color[2]})`
-            };
+  <head>
+    <title>Draw64</title>
+    <style>
+      body {
+        display: flex;
+        gap: 20px;
+      }
 
-            const gridSize = 64;
-            const squareSize = 10;
-            const canvasSize = gridSize * squareSize;
-            const dpr = 2;
-            const canvas = document.getElementById('canvas');
-        
-            const ctx = canvas.getContext('2d');
-            ctx.canvas.width = canvasSize * dpr;
-            ctx.canvas.height = canvasSize * dpr;
-            ctx.scale(dpr, dpr);
-            
-            
-            ctx.strokeStyle = '#b0b0b0';
-            ctx.strokeRect(0, 0, canvas.width / dpr, canvas.height / dpr);
-            ctx.beginPath();
-            
-            for (let i = 0; i < gridSize; i++) {
-                ctx.moveTo(i * squareSize, 0);
-                ctx.lineTo(i * squareSize, canvas.height);
-                ctx.moveTo(0, i * squareSize);
-                ctx.lineTo(canvas.width, i * squareSize);
-                ctx.stroke();
+      #palette {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+      }
+
+      .palette-button {
+        width: 30px;
+        height: 30px;
+        border-radius: 15px;
+        position: relative;
+      }
+
+      .palette-button.selected {
+        border: 1px solid black;
+      }
+
+      .palette-button.selected::before {
+        content: "";
+        border: 1px solid white;
+        border-radius: 15px;
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 28px;
+        height: 28px;
+      }
+    </style>
+  </head>
+  <body>
+    <canvas
+      style="width: 640px; height: 640px"
+      id="canvas"
+      width="1280"
+      height="1280"
+    ></canvas>
+    <div id="palette"></div>
+    <ul id="messages"></ul>
+    <script>
+      const strokeGrid = (ctx) => {
+        ctx.strokeStyle = "#b0b0b0";
+        ctx.strokeRect(0, 0, canvas.width / dpr, canvas.height / dpr);
+        ctx.beginPath();
+
+        for (let i = 0; i < gridSize; i++) {
+          ctx.moveTo(i * squareSize, 0);
+          ctx.lineTo(i * squareSize, canvas.height);
+          ctx.moveTo(0, i * squareSize);
+          ctx.lineTo(canvas.width, i * squareSize);
+          ctx.stroke();
+        }
+      };
+
+      window.addEventListener("load", async () => {
+        const imageData = await fetch("/images/img1/data").then((response) => {
+          if (response.ok) {
+            return response.json();
+          }
+        });
+
+        const canvas = document.getElementById("canvas");
+        const ctx = canvas.getContext("2d");
+        ctx.canvas.width = canvasSize * dpr;
+        ctx.canvas.height = canvasSize * dpr;
+
+        ctx.scale(dpr, dpr);
+        strokeGrid(ctx);
+        ctx.setTransform(1, 0, 0, 1, 0, 0);
+
+        imageData.forEach((row, rowIndex) => {
+          row.forEach((col, colIndex) => {
+            const [r, g, b] = col;
+
+            if (r === 255 && g === 255 && b === 255) {
+              return;
             }
-            ctx.setTransform(1, 0, 0, 1, 0, 0);
 
-            const onCanvasClick = (event) => {
-                const rect = canvas.getBoundingClientRect();
-                const x = Math.floor((event.clientX - rect.left) / squareSize);
-                const y = Math.floor((event.clientY - rect.top) / squareSize);
-                const [r, g, b] = selectedColor.replace(/[^\d,]/g, '').split(',').map((v) => parseInt(v, 10));
+            ctx.fillStyle = `rgb(${r}, ${g}, ${b})`;
+            ctx.fillRect(
+              rowIndex * squareSize * dpr,
+              colIndex * squareSize * dpr,
+              squareSize * dpr,
+              squareSize * dpr
+            );
+          });
+        });
+      });
 
-                const drawCommand = { 
-                    "command": {
-                        "command_type": "draw", 
-                        "values": [[x, y, r, g, b]]
-                    }
-                }
-    
-                ws.send(JSON.stringify(drawCommand));
-            };
+      const hexToRgb = (hex) => {
+        const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
 
-            canvas.addEventListener('click', onCanvasClick);
+        if (!result) {
+          return null;
+        }
 
-            const baseURL = location.origin.replace("http:", "ws:")
-            const ws = new WebSocket(`${baseURL}/ws/images/img1`);
-            ws.onmessage = function(event) {
-                const data = JSON.parse(event.data)
-                const [x, y, r, g, b]  = data.event.command.values[0];
-                ctx.fillStyle = `rgb(${r}, ${g}, ${b})`;
-                ctx.fillRect(x * squareSize * dpr, y * squareSize * dpr, squareSize * dpr, squareSize * dpr);
-            };
+        return (
+          `rgb(` +
+          `${parseInt(result[1], 16)}, ` +
+          `${parseInt(result[2], 16)}, ` +
+          `${parseInt(result[3], 16)})`
+        );
+      };
 
-            function sendMessage(event) {
-                var input = document.getElementById("messageText")
-                ws.send(input.value)
-                input.value = ''
-                event.preventDefault()
-            }
-        </script>
-    </body>
+      const palette = [
+        hexToRgb("#1a1c2c"),
+        hexToRgb("#5d275d"),
+        hexToRgb("#b13e53"),
+        hexToRgb("#ef7d57"),
+        hexToRgb("#ffcd75"),
+        hexToRgb("#a7f070"),
+        hexToRgb("#38b764"),
+        hexToRgb("#257179"),
+        hexToRgb("#29366f"),
+        hexToRgb("#3b5dc9"),
+        hexToRgb("#41a6f6"),
+        hexToRgb("#73eff7"),
+        hexToRgb("#f4f4f4"),
+        hexToRgb("#94b0c2"),
+        hexToRgb("#566c86"),
+        hexToRgb("#333c57"),
+      ];
+      const paletteButtons = document.querySelector("#palette");
+
+      const setSelectedColor = (event, color) => {
+        document
+          .querySelector(".palette-button.selected")
+          .setAttribute("class", "palette-button");
+
+        event.target.setAttribute("class", "palette-button selected");
+        selectedColor = color;
+      };
+
+      palette.forEach((color, index) => {
+        const paletteButton = document.createElement("div");
+        paletteButton.setAttribute("class", "palette-button");
+        paletteButton.setAttribute("style", `background-color: ${color};`);
+        paletteButton.addEventListener("click", (event) =>
+          setSelectedColor(event, color)
+        );
+
+        if (index === 0) {
+          paletteButton.setAttribute("class", "palette-button selected");
+        }
+
+        paletteButtons.appendChild(paletteButton);
+      });
+
+      let selectedColor = palette[0];
+      let lastMouseX = -1;
+      let lastMouseY = -1;
+      let isMouseDown = false;
+
+      const gridSize = 64;
+      const squareSize = 10;
+      const canvasSize = gridSize * squareSize;
+
+      const dpr = 2;
+      const canvas = document.getElementById("canvas");
+      const ctx = canvas.getContext("2d");
+
+      const getDrawCommand = (x, y, r, g, b) => ({
+        command: {
+          command_type: "draw",
+          values: [[x, y, r, g, b]],
+        },
+      });
+
+      const getMousePosition = (event) => {
+        const rect = canvas.getBoundingClientRect();
+        const x = Math.floor((event.clientX - rect.left) / squareSize);
+        const y = Math.floor((event.clientY - rect.top) / squareSize);
+
+        return [x, y];
+      };
+
+      const getSelectedColor = () =>
+        selectedColor
+          .replace(/[^\d,]/g, "")
+          .split(",")
+          .map((v) => parseInt(v, 10));
+
+      const sendDrawCommand = (x, y) => {
+        const [r, g, b] = getSelectedColor();
+
+        lastMouseX = x;
+        lastMouseY = y;
+        isMouseDown = true;
+
+        const drawCommand = getDrawCommand(x, y, r, g, b);
+
+        ws.send(JSON.stringify(drawCommand));
+      };
+
+      const onMouseDown = (event) => {
+        const [x, y] = getMousePosition(event);
+
+        sendDrawCommand(x, y);
+      };
+
+      const onMouseMove = (event) => {
+        if (!isMouseDown) {
+          return;
+        }
+
+        const [x, y] = getMousePosition(event);
+
+        if (x !== lastMouseX || y !== lastMouseY) {
+          sendDrawCommand(x, y);
+        }
+      };
+
+      const onMouseUp = () => {
+        isMouseDown = false;
+      };
+
+      canvas.addEventListener("mousedown", onMouseDown);
+      canvas.addEventListener("mousemove", onMouseMove);
+      canvas.addEventListener("mouseup", onMouseUp);
+
+      const baseURL = location.origin.replace("http:", "ws:");
+      const ws = new WebSocket(`${baseURL}/ws/images/img1`);
+
+      ws.onmessage = (event) => {
+        const data = JSON.parse(event.data);
+        const [x, y, r, g, b] = data.event.command.values[0];
+        ctx.fillStyle = `rgb(${r}, ${g}, ${b})`;
+        ctx.fillRect(
+          x * squareSize * dpr,
+          y * squareSize * dpr,
+          squareSize * dpr,
+          squareSize * dpr
+        );
+      };
+
+      const sendMessage = (event) => {
+        const input = document.getElementById("messageText");
+        ws.send(input.value);
+        input.value = "";
+        event.preventDefault();
+      };
+    </script>
+  </body>
 </html>
