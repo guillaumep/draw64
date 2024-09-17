@@ -1,4 +1,4 @@
-window.addEventListener("load", async () => {
+const initDropdown = async () => {
   const select = document.getElementById("images");
 
   select.onchange = (event) => {
@@ -7,6 +7,34 @@ window.addEventListener("load", async () => {
     initWebSocket(imageId);
   };
 
+  const evtSource = new EventSource("/sse/announce");
+
+  const addOption = ({ image_id }) => {
+    const existingOption = document.getElementById(`image-${image_id}`);
+    if (existingOption) {
+      return;
+    }
+
+    const option = document.createElement("option");
+    option.value = image_id;
+    option.text = image_id;
+    option.id = `image-${image_id}`;
+
+    select.appendChild(option);
+  };
+
+  evtSource.addEventListener("image_created", (event) => {
+    addOption(JSON.parse(event.data).event);
+  });
+
+  evtSource.addEventListener("image_deleted", (event) => {
+    const { image_id } = JSON.parse(event.data).event;
+    const option = document.getElementById(`image-${image_id}`);
+    if (option) {
+      select.removeChild(option);
+    }
+  });
+
   await fetch("/images")
     .then(async (result) => {
       if (result.ok) {
@@ -14,30 +42,6 @@ window.addEventListener("load", async () => {
       }
     })
     .then((images) => {
-      images.forEach(({ image_id }) => {
-        const option = document.createElement("option");
-        option.value = image_id;
-        option.text = image_id;
-
-        select.appendChild(option);
-      });
+      images.forEach(addOption);
     });
-
-  const evtSource = new EventSource("/sse/announce");
-
-  evtSource.addEventListener("image_created", (event) => {
-    const { image_id } = JSON.parse(event.data).event;
-    const option = document.createElement("option");
-    option.value = image_id;
-    option.text = image_id;
-    select.appendChild(option);
-  });
-
-  evtSource.addEventListener("image_deleted", (event) => {
-    const { image_id } = JSON.parse(event.data).event;
-    const option = select.children.find((option) => option.value === image_id);
-    if (option) {
-      select.removeChild(option);
-    }
-  });
-});
+};

@@ -73,6 +73,12 @@
     <script src="static/canvas.js"></script>
     <script src="static/dropdown.js"></script>
     <script src="static/webSocket.js"></script>
+    <script>
+      window.addEventListener("load", async () => {
+        initDropdown();
+        initWebSocket("default");
+      });
+    </script>
   </head>
   <body>
     <div class="canvas-container">
@@ -86,7 +92,9 @@
     </div>
     <div class="controls-container">
       <button id="random">Send a heart!</button>
-      <select id="images"></select>
+      <select id="images">
+        <option value="default" id="image-default">default</option>
+      </select>
       <ul id="messages"></ul>
     </div>
   </body>
