@@ -26,4 +26,6 @@ const onMessage = (event) => {
   });
 };
 
-initWebSocket("default");
+window.addEventListener("load", () => {
+  initWebSocket("default");
+});
