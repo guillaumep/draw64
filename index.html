@@ -59,7 +59,8 @@
 
             canvas.addEventListener('click', onCanvasClick);
 
-            var ws = new WebSocket("ws://localhost:8000/ws/img1");
+            const baseURL = location.origin.replace("http:", "ws:")
+            const ws = new WebSocket(`${baseURL}/ws/images/img1`);
             ws.onmessage = function(event) {
                 const data = JSON.parse(event.data)
                 const [x, y, r, g, b]  = data.event.command.values[0];

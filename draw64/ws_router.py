@@ -51,7 +51,7 @@ async def handle_websocket(
                 await websocket.send_text(event_message.model_dump_json())
 
 
-@router.websocket("/ws/{image_id}")
+@router.websocket("/ws/images/{image_id}")
 async def websocket_endpoint(image_id: ImageID, websocket: WebSocket):
     # FIXME: we might want to ask the caller to properly create its image
     # (and thus type image_id as ValidatedImageID)
