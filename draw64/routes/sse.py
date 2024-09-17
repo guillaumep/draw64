@@ -7,7 +7,8 @@ from fastapi import APIRouter
 from sse_starlette.sse import EventSourceResponse, ServerSentEvent
 
 from draw64.event import ImageEventMessage
-from draw64.state import announcer, stop_event
+from draw64.pubsub import announcer
+from draw64.state import stop_event
 
 router = APIRouter()
 logger = logging.getLogger(__name__)

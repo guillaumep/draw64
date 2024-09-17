@@ -2,12 +2,11 @@ from typing import Literal, Union
 
 from pydantic import BaseModel, Field
 
-from draw64.image_id import ImageID
 from draw64.update_image_request import Command
 
 
 class BaseImageEvent(BaseModel):
-    image_id: ImageID
+    image_id: str
 
 
 class ImageCreatedEvent(BaseImageEvent):

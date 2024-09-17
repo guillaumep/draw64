@@ -9,15 +9,10 @@ from fastapi import (
 from fastapi.responses import HTMLResponse
 
 from draw64.image import Image, ImageData
-from draw64.image_collection import ImageIDAlreadyExistsException
+from draw64.image_collection import collection, ImageIDAlreadyExistsException
 from draw64.image_id import ImageID, ValidatedImageID
-from draw64.state import announcer, pubsub, collection
+from draw64.statistics import statistics, Statistics
 from draw64.update_image_request import UpdateImageRequest
-from draw64.event_factory import (
-    make_image_created_message,
-    make_image_deleted_message,
-    make_image_updated_message,
-)
 
 router = APIRouter()
 
@@ -37,9 +32,7 @@ async def get_images_list() -> list[Image]:
 
 @router.post("/images", status_code=status.HTTP_201_CREATED)
 async def create_image() -> Image:
-    image = collection.create_image()
-    announcer.broadcast(make_image_created_message(image))
-    return image
+    return collection.create_image()
 
 
 @router.post(
@@ -52,9 +45,7 @@ async def create_image_with_id(image_id: ImageID) -> Image:
     Create an image, providing an ID.
     """
     try:
-        image = collection.create_image(image_id)
-        announcer.broadcast(make_image_created_message(image))
-        return image
+        return collection.create_image(image_id)
     except ImageIDAlreadyExistsException:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT, detail="Image ID already exists."
@@ -88,7 +79,6 @@ async def get_image_data(image_id: ValidatedImageID) -> ImageData:
 @router.put("/images/{image_id}")
 async def update_image(image_id: ValidatedImageID, update_request: UpdateImageRequest):
     collection[image_id].update(update_request.command)
-    pubsub.broadcast(image_id, make_image_updated_message(image_id, update_request))
 
 
 @router.delete(
@@ -96,5 +86,9 @@ async def update_image(image_id: ValidatedImageID, update_request: UpdateImageRe
     responses={status.HTTP_404_NOT_FOUND: {"description": "Image ID does not exist."}},
 )
 async def delete_image(image_id: ValidatedImageID):
-    announcer.broadcast(make_image_deleted_message(collection[image_id]))
     del collection[image_id]
+
+
+@router.get("/statistics")
+async def get_statistics() -> Statistics:
+    return statistics

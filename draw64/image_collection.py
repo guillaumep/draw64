@@ -1,4 +1,6 @@
 from draw64.image import Image
+from draw64.event_factory import make_image_created_message, make_image_deleted_message
+from draw64.pubsub import announcer
 
 
 class ImageIDAlreadyExistsException(Exception):
@@ -22,6 +24,8 @@ class ImageCollection:
         return self._images[image_id]
 
     def __delitem__(self, image_id: str):
+        announcer.broadcast(make_image_deleted_message(self._images[image_id]))
+
         del self._images[image_id]
 
     def values(self):
@@ -32,4 +36,10 @@ class ImageCollection:
             raise ImageIDAlreadyExistsException(image_id)
         image = Image(image_id=image_id) if image_id else Image()
         self._images[image.image_id] = image
+
+        announcer.broadcast(make_image_created_message(image))
+
         return image
+
+
+collection = ImageCollection()

@@ -2,7 +2,7 @@ from typing import Annotated
 
 from fastapi import Depends, HTTPException, Path, status
 
-from draw64.state import collection
+from draw64.image_collection import collection
 
 
 ImageID = Annotated[str, Path(max_length=30, pattern=r"^[a-zA-Z\d]+$")]

@@ -8,6 +8,8 @@ from numpydantic.dtype import UInt8
 from PIL import Image as PILImage
 from pydantic import BaseModel, Field
 
+from draw64.event_factory import make_image_updated_message
+from draw64.pubsub import pubsub
 from draw64.update_image_request import (
     ClearCanvasCommand,
     Command,
@@ -38,6 +40,10 @@ class Image(BaseModel):
             self.clear()
         elif isinstance(command, DrawCommand):
             self.update_values(command.values)
+
+        pubsub.broadcast(
+            self.image_id, make_image_updated_message(self.image_id, command)
+        )
 
     def update_values(self, values_array: ImageValues):
         for values in values_array:

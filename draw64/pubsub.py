@@ -47,3 +47,7 @@ class SimplePubSub:
     def broadcast(self, message: Any):
         for queue in self._queues:
             queue.put_nowait(message)
+
+
+pubsub = PubSub()
+announcer = SimplePubSub()
