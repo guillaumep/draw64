@@ -29,12 +29,14 @@ class Image(BaseModel):
     image_id: str
     data: ImageData = Field(default_factory=create_image_data, exclude=True)
 
-    def update(self, command: Command):
+    def _apply_command(self, command: Command):
         if isinstance(command, ClearCanvasCommand):
             self.clear()
         elif isinstance(command, DrawCommand):
             self.update_values(command.values)
 
+    def update(self, command: Command):
+        self._apply_command(command)
         pubsub.broadcast(
             self.image_id, make_image_updated_message(self.image_id, command)
         )
