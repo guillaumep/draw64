@@ -47,7 +47,10 @@ class Image(BaseModel):
 
     def update_values(self, values_array: ImageValues):
         for values in values_array:
-            self.data[values[0]][values[1]] = values[2:5]
+            x = values[0]
+            y = values[1]
+            if x >= 0 and x < 64 and y >= 0 and y < 64:
+                self.data[x][y] = values[2:5]
 
     def clear(self):
         self.data.fill(255)
