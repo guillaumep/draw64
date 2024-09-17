@@ -25,7 +25,9 @@ router = APIRouter()
 @router.get("/", include_in_schema=False)
 async def get():
     # NOTE: once development is done we could read the file only once
-    return HTMLResponse(open(Path(__file__).parent.parent / "index.html", "r").read())
+    return HTMLResponse(
+        open(Path(__file__).parent.parent.parent / "index.html", "r").read()
+    )
 
 
 @router.get("/images")
