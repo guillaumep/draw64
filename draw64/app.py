@@ -1,6 +1,7 @@
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
+from fastapi.staticfiles import StaticFiles
 
 from draw64.routes.api import router as api_router
 from draw64.routes.sse import router as sse_router
@@ -21,3 +22,5 @@ app = FastAPI(lifespan=lifespan)
 app.include_router(api_router)
 app.include_router(sse_router)
 app.include_router(ws_router)
+
+app.mount("/static", StaticFiles(directory="static"), name="static")
