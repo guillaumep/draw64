@@ -5,17 +5,39 @@
     <style>
       body {
         display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        margin: 0;
+        height: 100vh;
+        width: 100vw;
+        overflow: hidden;
+        touch-action: none;
+      }
+      .canvas-container {
+        display: flex;
         gap: 20px;
+      }
+
+      .controls-container {
+        display: flex;
+        gap: 1em;
+        padding: 1em;
       }
 
       #random {
         height: 2em;
       }
 
+      #images {
+        height: 2em;
+      }
+
       #palette {
         display: flex;
         flex-direction: column;
-        gap: 5px;
+        justify-content: space-between;
+        padding: 5px 0;
       }
 
       .palette-button {
@@ -39,20 +61,32 @@
         width: 28px;
         height: 28px;
       }
+
+      canvas {
+        touch-action: none;
+      }
     </style>
     <script src="static/palette.js"></script>
     <script src="static/canvas.js"></script>
+    <script src="static/dropdown.js"></script>
   </head>
   <body>
-    <canvas
-      style="width: 640px; height: 640px"
-      id="canvas"
-      width="1280"
-      height="1280"
-    ></canvas>
-    <div id="palette"></div>
-    <button id="random">Send a heart!</button>
-    <ul id="messages"></ul>
+    <div class="canvas-container">
+      <canvas
+        style="width: 640px; height: 640px"
+        id="canvas"
+        width="1280"
+        height="1280"
+      ></canvas>
+      <div id="palette"></div>
+    </div>
+    <div class="controls-container">
+      <button id="random">Send a heart!</button>
+      <button id="add">New Image</button>
+      <button id="remove">Delete Image</button>
+      <select id="images"></select>
+      <ul id="messages"></ul>
+    </div>
     <script>
       const baseURL = location.origin.replace("http:", "ws:");
       const ws = new WebSocket(`${baseURL}/ws/images/img1`);

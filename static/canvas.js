@@ -125,7 +125,7 @@ const onMouseMove = (event) => {
   }
 };
 
-const onMouseUp = () => {
+const onMouseUp = (event) => {
   event.preventDefault();
   event.stopPropagation();
   isMouseDown = false;
