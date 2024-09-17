@@ -24,8 +24,8 @@ const drawTiles = (ctx) => {
   }
 };
 
-window.addEventListener("load", async () => {
-  const imageData = await fetch("/images/img1/data").then((response) => {
+const loadImage = async (imageURL) => {
+  const imageData = await fetch(`/images/${imageURL}/data`).then((response) => {
     if (response.ok) {
       return response.json();
     }
@@ -37,10 +37,11 @@ window.addEventListener("load", async () => {
   ctx.canvas.height = canvasSize * dpr;
 
   ctx.scale(dpr, dpr);
+  ctx.clearRect(0, 0, canvasSize, canvasSize);
   drawTiles(ctx);
   ctx.setTransform(1, 0, 0, 1, 0, 0);
 
-  imageData.forEach((row, rowIndex) => {
+  imageData?.forEach((row, rowIndex) => {
     row.forEach((col, colIndex) => {
       const [r, g, b] = col;
 
@@ -57,6 +58,10 @@ window.addEventListener("load", async () => {
       );
     });
   });
+};
+
+window.addEventListener("load", async () => {
+  loadImage("default");
 
   canvas.addEventListener("pointerdown", onMouseDown);
   canvas.addEventListener("pointermove", onMouseMove);
