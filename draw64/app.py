@@ -2,9 +2,9 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 
-from draw64.api_router import router as api_router
-from draw64.sse_router import router as sse_router
-from draw64.ws_router import router as ws_router
+from draw64.routes.api import router as api_router
+from draw64.routes.sse import router as sse_router
+from draw64.routes.ws import router as ws_router
 from draw64.state import stop_event
 
 
