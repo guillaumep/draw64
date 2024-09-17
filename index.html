@@ -21,16 +21,19 @@
 
       .controls-container {
         display: flex;
-        gap: 1em;
+        gap: 2em;
         padding: 1em;
       }
 
       #random {
+        font-size: 26px;
         height: 2em;
       }
 
       #images {
+        font-size: 26px;
         height: 2em;
+        width: 5em;
       }
 
       #palette {
@@ -69,6 +72,7 @@
     <script src="static/palette.js"></script>
     <script src="static/canvas.js"></script>
     <script src="static/dropdown.js"></script>
+    <script src="static/webSocket.js"></script>
   </head>
   <body>
     <div class="canvas-container">
@@ -82,36 +86,8 @@
     </div>
     <div class="controls-container">
       <button id="random">Send a heart!</button>
-      <button id="add">New Image</button>
-      <button id="remove">Delete Image</button>
       <select id="images"></select>
       <ul id="messages"></ul>
     </div>
-    <script>
-      const baseURL = location.origin.replace("http:", "ws:");
-      const ws = new WebSocket(`${baseURL}/ws/images/img1`);
-
-      ws.onmessage = (event) => {
-        const data = JSON.parse(event.data);
-        data.event.command.values.forEach(([x, y, r, g, b]) => {
-          const canvas = document.getElementById("canvas");
-          const ctx = canvas.getContext("2d");
-          ctx.fillStyle = `rgb(${r}, ${g}, ${b})`;
-          ctx.fillRect(
-            x * squareSize * dpr,
-            y * squareSize * dpr,
-            squareSize * dpr,
-            squareSize * dpr
-          );
-        });
-      };
-
-      const sendMessage = (event) => {
-        const input = document.getElementById("messageText");
-        ws.send(input.value);
-        input.value = "";
-        event.preventDefault();
-      };
-    </script>
   </body>
 </html>
