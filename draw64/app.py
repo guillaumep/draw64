@@ -2,7 +2,7 @@ import asyncio
 
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI
+from fastapi import Depends, FastAPI, Response
 from fastapi.staticfiles import StaticFiles
 
 from draw64.routes.api import router as api_router
@@ -26,7 +26,11 @@ async def lifespan(app: FastAPI):
     # App shutdown
 
 
-app = FastAPI(lifespan=lifespan)
+async def no_cache(response: Response):
+    response.headers["Cache-Control"] = "no-cache, no-store"
+
+
+app = FastAPI(lifespan=lifespan, dependencies=[Depends(no_cache)])
 app.include_router(api_router)
 app.include_router(sse_router)
 app.include_router(ws_router)
