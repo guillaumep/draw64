@@ -34,4 +34,4 @@ async def get_announces():
 
 @router.get("/sse/announce", include_in_schema=False)
 async def server_sent_event_annouce():
-    return EventSourceResponse(get_announces(), send_timeout=5)
+    return EventSourceResponse(get_announces(), send_timeout=5, ping=5)
