@@ -53,7 +53,7 @@ async def websocket_image_endpoint(image_id: ImageID, websocket: WebSocket):
 
     # Automatically create images when using the websocket API
     if image_id not in collection:
-        collection.create_image(image_id)
+        collection.create_image(image_id, force=True)
 
     try:
         await handle_websocket(image_id, websocket, message_queue)

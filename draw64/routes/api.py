@@ -9,7 +9,11 @@ from fastapi import (
 from fastapi.responses import HTMLResponse
 
 from draw64.image import Image, ImageData
-from draw64.image_collection import collection, ImageIDAlreadyExistsException
+from draw64.image_collection import (
+    collection,
+    ImageIDAlreadyExistsException,
+    TooManyImagesException,
+)
 from draw64.image_id import ImageID, ValidatedImageID
 from draw64.statistics import statistics, Statistics
 from draw64.update_image_request import UpdateImageRequest
@@ -30,15 +34,31 @@ async def get_images_list() -> list[Image]:
     return list(collection.values())
 
 
-@router.post("/images", status_code=status.HTTP_201_CREATED)
+@router.post(
+    "/images",
+    status_code=status.HTTP_201_CREATED,
+    responses={
+        status.HTTP_409_CONFLICT: {"description": "Too many images already created."}
+    },
+)
 async def create_image() -> Image:
-    return collection.create_image()
+    try:
+        return collection.create_image()
+    except TooManyImagesException:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Too many images already created.",
+        )
 
 
 @router.post(
     "/images/{image_id}",
     status_code=status.HTTP_201_CREATED,
-    responses={status.HTTP_409_CONFLICT: {"description": "Image ID already exists."}},
+    responses={
+        status.HTTP_409_CONFLICT: {
+            "description": "Image ID already exists or too many images already created."
+        }
+    },
 )
 async def create_image_with_id(image_id: ImageID) -> Image:
     """
@@ -49,6 +69,11 @@ async def create_image_with_id(image_id: ImageID) -> Image:
     except ImageIDAlreadyExistsException:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT, detail="Image ID already exists."
+        )
+    except TooManyImagesException:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Too many images already created.",
         )
 
 

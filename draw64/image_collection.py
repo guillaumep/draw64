@@ -24,6 +24,10 @@ class ImageIDAlreadyExistsException(Exception):
     pass
 
 
+class TooManyImagesException(Exception):
+    pass
+
+
 class ImageCollection:
     def __init__(self):
         self._images: dict[str, Image] = {}
@@ -62,7 +66,10 @@ class ImageCollection:
 
         return image_id
 
-    def create_image(self, image_id: str | None = None) -> Image:
+    def create_image(self, image_id: str | None = None, force=False) -> Image:
+        if len(self) > 10 and not force:
+            raise TooManyImagesException()
+
         if image_id and image_id in self:
             raise ImageIDAlreadyExistsException(image_id)
 
