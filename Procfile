@@ -1,1 +1,1 @@
-web: env UVICORN_WS_PING_INTERVAL=10 fastapi run draw64/app.py --port $PORT
+web: env UVICORN_WS_PING_INTERVAL=10 fastapi run draw64/app.py --port $PORT --workers 1
