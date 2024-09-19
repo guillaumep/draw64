@@ -22,8 +22,28 @@ class ImageDeletedEvent(BaseImageEvent):
     event_type: Literal["image_deleted"] = "image_deleted"
 
 
-ImageEvent = Union[ImageCreatedEvent, ImageUpdatedEvent, ImageDeletedEvent]
+class UserConnectedEvent(BaseModel):
+    event_type: Literal["user_connected"] = "user_connected"
 
 
-class ImageEventMessage(BaseModel):
-    event: ImageEvent = Field(..., discriminator="event_type")
+class UserDisconnectedEvent(BaseModel):
+    event_type: Literal["user_disconnected"] = "user_disconnected"
+
+
+class UserCountUpdated(BaseModel):
+    event_type: Literal["user_count_updated"] = "user_count_updated"
+    user_count: int
+
+
+Event = Union[
+    ImageCreatedEvent,
+    ImageDeletedEvent,
+    ImageUpdatedEvent,
+    UserConnectedEvent,
+    UserCountUpdated,
+    UserDisconnectedEvent,
+]
+
+
+class EventMessage(BaseModel):
+    event: Event = Field(..., discriminator="event_type")

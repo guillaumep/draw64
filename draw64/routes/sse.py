@@ -6,7 +6,7 @@ from typing import cast
 from fastapi import APIRouter
 from sse_starlette.sse import EventSourceResponse, ServerSentEvent
 
-from draw64.event import ImageEventMessage
+from draw64.event import EventMessage
 from draw64.pubsub import announcer
 
 router = APIRouter()
@@ -18,7 +18,7 @@ async def get_announces():
     message_queue = announcer.subscribe()
     try:
         while True:
-            message = cast(ImageEventMessage, await message_queue.get())
+            message = cast(EventMessage, await message_queue.get())
             yield ServerSentEvent(
                 data=message.model_dump_json(),
                 event=message.event.event_type,

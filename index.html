@@ -25,6 +25,11 @@
         padding: 1em;
       }
 
+      .user-count-container {
+        margin-top: 1.5em;
+        font-size: 26px;
+      }
+
       #random {
         font-size: 26px;
         height: 2em;
@@ -71,11 +76,11 @@
     </style>
     <script src="static/palette.js"></script>
     <script src="static/canvas.js"></script>
-    <script src="static/dropdown.js"></script>
+    <script src="static/controls.js"></script>
     <script src="static/webSocket.js"></script>
     <script>
       window.addEventListener("load", async () => {
-        initDropdown();
+        initControls();
         initWebSocket("default");
       });
     </script>
@@ -97,5 +102,8 @@
       </select>
       <ul id="messages"></ul>
     </div>
-  </body>
+    <div class="user-count-container">
+      <span id="user-count">1</span> user(s)
+    </div>
+    </body>
 </html>

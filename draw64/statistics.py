@@ -5,14 +5,16 @@ from typing import cast
 
 from pydantic import BaseModel
 
-from draw64.event import ImageEventMessage
+from draw64.event import EventMessage
+from draw64.event_factory import make_user_count_updated_message
 from draw64.pubsub import announcer, pubsub, SubscribedQueue
 
 
 class Statistics(BaseModel):
     images_created: int = 0
     images_deleted: int = 0
-    update_count: defaultdict[str, int] = defaultdict(int)
+    user_count: int = 0
+    image_updates: defaultdict[str, int] = defaultdict(int)
 
 
 statistics = Statistics()
@@ -23,11 +25,18 @@ async def update_statistics_from_announcer():
 
     while True:
         message = await announcer_queue.get()
-        event = cast(ImageEventMessage, message).event
+        event = cast(EventMessage, message).event
         if event.event_type == "image_created":
             statistics.images_created += 1
         elif event.event_type == "image_deleted":
             statistics.images_deleted += 1
+        elif event.event_type == "user_connected":
+            statistics.user_count += 1
+        elif event.event_type == "user_disconnected":
+            statistics.user_count -= 1
+
+        if event.event_type in ("user_connected", "user_disconnected"):
+            announcer.broadcast(make_user_count_updated_message(statistics.user_count))
 
 
 async def update_statistics_from_pubsub():
@@ -51,7 +60,7 @@ async def update_statistics_from_pubsub():
 
         for done in done_tasks:
             result = done.result()
-            event = cast(ImageEventMessage, result).event
+            event = cast(EventMessage, result).event
             # image_created and image_deleted are sent via the annoucer
             if event.event_type == "image_created":
                 image_queues[event.image_id] = pubsub.subscribe(event.image_id)
@@ -59,4 +68,4 @@ async def update_statistics_from_pubsub():
                 image_queues[event.image_id].unsubscribe()
             # image_updated is sent via the pubsub
             elif event.event_type == "image_updated":
-                statistics.update_count[event.image_id] += 1
+                statistics.image_updates[event.image_id] += 1
